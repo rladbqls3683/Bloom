@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bloom Spiral</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+  <body>
+  <header class="top-nav">
+    <img src="logo.png" alt="Bloom Spiral 로고" class="logo-img" />
+    <nav class="menu">
+      <a href="#">Bloom The Flower!</a>
+      <a href="#">About Our Site</a>
+    </nav>
+  </header>
+  <div class="page-gradient"></div>
+  <div class="page-fade" id="appFade"></div>
+
+  <main class="layout">
+    <section class="visual">
+      <div class="canvas-shell">
+        <canvas id="myCanvas"></canvas>
+      </div>
+    </section>
+
+    <section class="controls">
+      <h1>Bloom Your Pattern</h1>
+
+      <div class="control-group">
+        <label>잎 개수</label>
+        <div class="slider-row">
+          <input type="range" id="leafCount" min="8" max="64" step="2" value="32">
+          <span class="value-tag" id="leafCountText">32</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>패턴 크기</label>
+        <div class="slider-row">
+          <input type="range" id="scaleSlider" min="60" max="130" value="100">
+          <span class="value-tag" id="scaleText">100%</span>
+        </div>
+      </div>
+
+      <div class="inline-inputs">
+        <label>잎 시작
+          <input type="number" id="leafStart" value="70" min="10" max="220">
+        </label>
+        <label>벌레 수
+          <input type="number" id="bugCount" value="8" min="1" max="40">
+        </label>
+      </div>
+
+      <div class="color-row">
+        <label>라인<input type="color" id="lineColor" value="#325940"></label>
+        <label>메인<input type="color" id="mainColor" value="#D74236"></label>
+        <label>보조<input type="color" id="accentColor" value="#A3BFAF"></label>
+        <label>서브<input type="color" id="subColor" value="#648C72"></label>
+        <label>라이트<input type="color" id="lightColor" value="#F2F2F2"></label>
+      </div>
+
+      <div class="preset-bar">
+        <button class="preset" data-preset="tropical">Tropical</button>
+        <button class="preset" data-preset="mystic">Mystic</button>
+        <button class="preset" data-preset="forest">Forest</button>
+      </div>
+
+      <div class="toggle-row">
+        <button id="tileToggleBtn" class="ghost">타일 배치: OFF</button>
+        <div class="slider-row">
+          <label>타일 밀도</label>
+          <input type="range" id="densitySlider" min="1" max="5" value="2">
+          <span class="value-tag" id="densityText">2</span>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button id="redrawBtn">패턴 새로고침</button>
+        <button id="downloadBtn" class="ghost">이미지 다운로드</button>
+      </div>
+    </section>
+  </main>
+
+  <button class="tray-toggle" id="trayToggleBtn" aria-label="이미지 트레이 열기/닫기">
+    <img src="arrow_back_ios.svg" alt="" />
+  </button>
+
+  <section class="bottom-tray" id="bottomTray" aria-label="이미지 목록">
+    <div class="thumb" data-idx="01"><span>01</span></div>
+    <div class="thumb" data-idx="02"><span>02</span></div>
+    <div class="thumb" data-idx="03"><span>03</span></div>
+    <div class="thumb" data-idx="04"><span>04</span></div>
+    <div class="thumb" data-idx="05"><span>05</span></div>
+    <div class="thumb" data-idx="06"><span>06</span></div>
+    <div class="thumb" data-idx="07"><span>07</span></div>
+    <div class="thumb" data-idx="08"><span>08</span></div>
+    <div class="thumb" data-idx="09"><span>09</span></div>
+    <div class="thumb" data-idx="10"><span>10</span></div>
+    <div class="thumb" data-idx="11"><span>11</span></div>
+    <div class="thumb" data-idx="12"><span>12</span></div>
+  </section>
+
+  <!-- ⚠️ 여기에는 src만! 안에 코드 넣지 말기 -->
+  <script src="script.js"></script>
+  <script>
+    const appFade = document.getElementById('appFade');
+    if (appFade) {
+      requestAnimationFrame(() => {
+        appFade.classList.add('is-hidden');
+      });
+    }
+  </script>
+</body>
+</html>

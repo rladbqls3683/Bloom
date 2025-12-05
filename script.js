@@ -88,6 +88,8 @@ function setIntroCanvasSize() {
   const thumbOverlayImg  = document.getElementById("thumbOverlayImg");
   const thumbOverlayClose= document.getElementById("thumbOverlayClose");
   const topNav           = document.querySelector(".top-nav");
+  const navArrow         = document.getElementById("navArrow");
+  const bgmAudio         = document.getElementById("bgmAudio");
 
   // 새로 추가된 요소
   const tileToggleBtn    = document.getElementById("tileToggleBtn");
@@ -550,13 +552,40 @@ function setIntroCanvasSize() {
     if (e.key === "Escape") closeOverlay();
   });
 
+  // 배경 음악 자동 재생 + 반복
+  if (bgmAudio) {
+    bgmAudio.loop = true;
+    const tryPlay = () => {
+      const p = bgmAudio.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          const unlock = () => {
+            bgmAudio.play().finally(() => {
+              document.removeEventListener("click", unlock);
+              document.removeEventListener("keydown", unlock);
+              document.removeEventListener("touchstart", unlock);
+            });
+          };
+          document.addEventListener("click", unlock, { once: true });
+          document.addEventListener("keydown", unlock, { once: true });
+          document.addEventListener("touchstart", unlock, { once: true });
+        });
+      }
+    };
+    tryPlay();
+  }
+
   // 상단 네비: 마우스가 상단 근처에 오면 내려오기
   if (topNav) {
     let navHideTimer;
     const SHOW_Y = 90;
-    const hideNav = () => topNav.classList.remove("is-open");
+    const hideNav = () => {
+      topNav.classList.remove("is-open");
+      if (navArrow) navArrow.classList.remove("is-open");
+    };
     const showNav = () => {
       topNav.classList.add("is-open");
+      if (navArrow) navArrow.classList.add("is-open");
       if (navHideTimer) clearTimeout(navHideTimer);
       navHideTimer = setTimeout(hideNav, 1200);
     };
@@ -567,6 +596,19 @@ function setIntroCanvasSize() {
 
     topNav.addEventListener("mouseenter", showNav);
     topNav.addEventListener("mouseleave", hideNav);
+    if (navArrow) {
+      navArrow.addEventListener("click", () => {
+        const nowOpen = topNav.classList.contains("is-open");
+        if (navHideTimer) clearTimeout(navHideTimer);
+        if (nowOpen) {
+          hideNav();
+        } else {
+          showNav();
+        }
+      });
+      navArrow.addEventListener("mouseenter", showNav);
+      navArrow.addEventListener("focus", showNav);
+    }
     // 초기 살짝 보이기
     setTimeout(showNav, 300);
   }

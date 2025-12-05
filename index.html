@@ -88,11 +88,13 @@
     <div class="cta">Click That Bloom!</div>
   </div>
   <div class="blackout" id="blackout"></div>
+  <audio id="introBgm" src="BG.mp3" loop preload="auto"></audio>
 
   <script>
     (() => {
       const canvas = document.getElementById("bgCanvas");
       const ctx = canvas.getContext("2d");
+      const introBgm = document.getElementById("introBgm");
 
       const COLORS = {
         line: "#325940",
@@ -115,6 +117,29 @@
         leafStart: 70,
         bugCount: 8
       };
+
+      if (introBgm) {
+        introBgm.volume = 0.35;
+        introBgm.loop = true;
+        const tryPlay = () => {
+          const p = introBgm.play();
+          if (p && typeof p.catch === "function") {
+            p.catch(() => {
+              const unlock = () => {
+                introBgm.play().finally(() => {
+                  document.removeEventListener("click", unlock);
+                  document.removeEventListener("keydown", unlock);
+                  document.removeEventListener("touchstart", unlock);
+                });
+              };
+              document.addEventListener("click", unlock, { once: true });
+              document.addEventListener("keydown", unlock, { once: true });
+              document.addEventListener("touchstart", unlock, { once: true });
+            });
+          }
+        };
+        tryPlay();
+      }
 
       function getPalette() {
         return [COLORS.main, COLORS.accent, COLORS.sub, COLORS.light];

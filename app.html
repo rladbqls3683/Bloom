@@ -4,18 +4,23 @@
   <meta charset="UTF-8" />
   <title>Bloom Spiral</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
   <body>
   <header class="top-nav">
-    <img src="logo.png" alt="Bloom Spiral 로고" class="logo-img" />
+    <a href="index.html" class="logo-link" aria-label="오프닝으로 이동">
+      <img src="Logo.png" alt="Bloom Spiral 로고" class="logo-img" />
+    </a>
     <nav class="menu">
-      <a href="#">Bloom The Flower!</a>
-      <a href="#">About Our Site</a>
+      <a href="overview.html" class="overview-link" id="overviewLink">About Our Site</a>
     </nav>
   </header>
   <div class="page-gradient"></div>
   <div class="page-fade" id="appFade"></div>
+  <div class="page-transition" id="pageTransition"></div>
 
   <main class="layout">
     <section class="visual">
@@ -25,57 +30,78 @@
     </section>
 
     <section class="controls">
-      <h1>Bloom Your Pattern</h1>
+      <h1>Bloom Your Pattern!</h1>
 
-      <div class="control-group">
-        <label>잎 개수</label>
-        <div class="slider-row">
-          <input type="range" id="leafCount" min="8" max="64" step="2" value="32">
-          <span class="value-tag" id="leafCountText">32</span>
+      <div class="control-block collapsed" data-section="entity">
+        <div class="section-title" role="button" tabindex="0" aria-expanded="false"><span>개체 설정</span></div>
+        <div class="block-body" hidden>
+
+          <div class="control-group">
+            <label>잎 개수</label>
+            <div class="slider-row">
+              <input type="range" id="leafCount" min="8" max="64" step="2" value="32">
+              <span class="value-tag" id="leafCountText">32</span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>잎 크기</label>
+            <div class="slider-row">
+              <input type="range" id="leafStart" value="70" min="10" max="220">
+              <span class="value-tag" id="leafStartText">70</span>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <label>벌레 수</label>
+            <div class="slider-row">
+              <input type="range" id="bugCount" value="8" min="1" max="40">
+              <span class="value-tag" id="bugCountText">8</span>
+            </div>
+          </div>
+
+        <div class="control-group">
+          <label>패턴 크기</label>
+          <div class="slider-row">
+            <input type="range" id="scaleSlider" min="60" max="130" value="120">
+            <span class="value-tag" id="scaleText">120%</span>
+          </div>
+        </div>
         </div>
       </div>
 
-      <div class="control-group">
-        <label>패턴 크기</label>
-        <div class="slider-row">
-          <input type="range" id="scaleSlider" min="60" max="130" value="100">
-          <span class="value-tag" id="scaleText">100%</span>
+      <div class="control-block no-top-line collapsed" data-section="color">
+        <div class="section-title" role="button" tabindex="0" aria-expanded="false"><span>색상 설정</span></div>
+        <div class="block-body" hidden>
+          <div class="color-row">
+            <label>라인<input type="color" id="lineColor" value="#325940"></label>
+            <label>메인<input type="color" id="mainColor" value="#D74236"></label>
+            <label>보조<input type="color" id="accentColor" value="#A3BFAF"></label>
+            <label>서브<input type="color" id="subColor" value="#648C72"></label>
+            <label>라이트<input type="color" id="lightColor" value="#F2F2F2"></label>
+          </div>
+
+          <div class="preset-wrapper">
+            <button id="presetToggle" class="ghost dots" aria-expanded="false" aria-controls="presetMenu">•••</button>
+            <div class="preset-bar" id="presetMenu" hidden>
+              <button class="preset" data-preset="tropical">Tropical</button>
+              <button class="preset" data-preset="mystic">Mystic</button>
+              <button class="preset" data-preset="forest">Forest</button>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div class="inline-inputs">
-        <label>잎 시작
-          <input type="number" id="leafStart" value="70" min="10" max="220">
-        </label>
-        <label>벌레 수
-          <input type="number" id="bugCount" value="8" min="1" max="40">
-        </label>
-      </div>
-
-      <div class="color-row">
-        <label>라인<input type="color" id="lineColor" value="#325940"></label>
-        <label>메인<input type="color" id="mainColor" value="#D74236"></label>
-        <label>보조<input type="color" id="accentColor" value="#A3BFAF"></label>
-        <label>서브<input type="color" id="subColor" value="#648C72"></label>
-        <label>라이트<input type="color" id="lightColor" value="#F2F2F2"></label>
-      </div>
-
-      <div class="preset-bar">
-        <button class="preset" data-preset="tropical">Tropical</button>
-        <button class="preset" data-preset="mystic">Mystic</button>
-        <button class="preset" data-preset="forest">Forest</button>
       </div>
 
       <div class="toggle-row">
         <button id="tileToggleBtn" class="ghost">타일 배치: OFF</button>
-        <div class="slider-row">
+        <div class="slider-row tile-density hidden">
           <label>타일 밀도</label>
           <input type="range" id="densitySlider" min="1" max="5" value="2">
           <span class="value-tag" id="densityText">2</span>
         </div>
       </div>
 
-      <div class="action-row">
+      <div class="action-row center">
         <button id="redrawBtn">패턴 새로고침</button>
         <button id="downloadBtn" class="ghost">이미지 다운로드</button>
       </div>
@@ -101,6 +127,11 @@
     <div class="thumb" data-idx="12"><span>12</span></div>
   </section>
 
+  <div class="thumb-overlay" id="thumbOverlay" aria-modal="true" role="dialog" hidden>
+    <button class="thumb-overlay__close" id="thumbOverlayClose" aria-label="미리보기 닫기">×</button>
+    <img id="thumbOverlayImg" alt="Mockup preview" />
+  </div>
+
   <!-- ⚠️ 여기에는 src만! 안에 코드 넣지 말기 -->
   <script src="script.js"></script>
   <script>
@@ -108,6 +139,22 @@
     if (appFade) {
       requestAnimationFrame(() => {
         appFade.classList.add('is-hidden');
+      });
+    }
+    const pageTransition = document.getElementById('pageTransition');
+    const overviewLink = document.getElementById('overviewLink');
+    document.body.classList.add('is-ready');
+
+    function navigateWithFade(target){
+      if (!pageTransition) { window.location.href = target; return; }
+      document.body.classList.add('is-leaving');
+      setTimeout(() => { window.location.href = target; }, 550);
+    }
+
+    if (overviewLink) {
+      overviewLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateWithFade(overviewLink.href);
       });
     }
   </script>

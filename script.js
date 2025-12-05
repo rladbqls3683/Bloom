@@ -69,12 +69,25 @@ function setIntroCanvasSize() {
   const bugCountInput    = document.getElementById("bugCount");
   const leafCountText    = document.getElementById("leafCountText");
   const scaleText        = document.getElementById("scaleText");
+  const leafStartText    = document.getElementById("leafStartText");
+  const bugCountText     = document.getElementById("bugCountText");
   const lineColorInput   = document.getElementById("lineColor");
   const mainColorInput   = document.getElementById("mainColor");
   const accentColorInput = document.getElementById("accentColor");
   const subColorInput    = document.getElementById("subColor");
   const lightColorInput  = document.getElementById("lightColor");
   const redrawBtn        = document.getElementById("redrawBtn");
+  const presetToggle     = document.getElementById("presetToggle");
+  const presetWrapper    = document.querySelector(".preset-wrapper");
+  const presetMenu       = document.getElementById("presetMenu");
+  const sectionTitles    = document.querySelectorAll(".control-block .section-title");
+  const tileDensityRow   = document.querySelector(".tile-density");
+  const controlsSection  = document.querySelector(".controls");
+  const thumbs           = document.querySelectorAll(".thumb");
+  const thumbOverlay     = document.getElementById("thumbOverlay");
+  const thumbOverlayImg  = document.getElementById("thumbOverlayImg");
+  const thumbOverlayClose= document.getElementById("thumbOverlayClose");
+  const topNav           = document.querySelector(".top-nav");
 
   // 새로 추가된 요소
   const tileToggleBtn    = document.getElementById("tileToggleBtn");
@@ -101,7 +114,7 @@ function setIntroCanvasSize() {
     density: densitySlider.value
   };
 
-  // 타일 모드 상태
+  // 타일 모드 상태 (기본 OFF)
   let isTiling = false;
 
   /* 팔레트 */
@@ -459,6 +472,105 @@ function setIntroCanvasSize() {
     });
   });
 
+  if (presetToggle && presetWrapper && presetMenu) {
+    presetToggle.addEventListener("click", () => {
+      const isOpen = presetWrapper.classList.toggle("is-open");
+      presetToggle.setAttribute("aria-expanded", isOpen);
+      presetMenu.hidden = !isOpen;
+    });
+  }
+
+  // 섹션 접기/펴기
+  sectionTitles.forEach(title => {
+    const block = title.closest(".control-block");
+    const body = block ? block.querySelector(".block-body") : null;
+    if (!block || !body) return;
+
+    const toggleBlock = () => {
+      const isCollapsed = block.classList.toggle("collapsed");
+      const expanded = !isCollapsed;
+      title.setAttribute("aria-expanded", expanded);
+      body.hidden = isCollapsed;
+    };
+
+    title.addEventListener("click", toggleBlock);
+    title.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleBlock();
+      }
+    });
+
+    // 초기 접힘 상태 동기화
+    body.hidden = block.classList.contains("collapsed");
+  });
+
+  // 썸네일 모음: mockup 이미지 자동 배치 (부족하면 순환)
+  const MOCKUPS = [
+    "Mockup00001.jpeg",
+    "Mockup00002.png",
+    "Mockup00003.jpeg",
+    "Mockup00004.jpeg",
+    "Mockup00005.png",
+    "Mockup00006.png",
+    "Mockup00007.png",
+    "Mockup00008.png"
+  ];
+
+  thumbs.forEach((thumb, idx) => {
+    const src = MOCKUPS[idx % MOCKUPS.length];
+    thumb.style.backgroundImage = `url(${src})`;
+    thumb.dataset.src = src;
+
+    thumb.addEventListener("click", () => {
+      if (!thumbOverlay || !thumbOverlayImg) return;
+      thumbOverlayImg.src = src;
+      thumbOverlay.hidden = false;
+      thumbOverlay.focus();
+    });
+  });
+
+  const closeOverlay = () => {
+    if (!thumbOverlay || !thumbOverlayImg) return;
+    thumbOverlay.hidden = true;
+    thumbOverlayImg.src = "";
+  };
+
+  if (thumbOverlay) {
+    thumbOverlay.addEventListener("click", (e) => {
+      if (e.target === thumbOverlay) closeOverlay();
+    });
+  }
+
+  if (thumbOverlayClose) {
+    thumbOverlayClose.addEventListener("click", closeOverlay);
+  }
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeOverlay();
+  });
+
+  // 상단 네비: 마우스가 상단 근처에 오면 내려오기
+  if (topNav) {
+    let navHideTimer;
+    const SHOW_Y = 90;
+    const hideNav = () => topNav.classList.remove("is-open");
+    const showNav = () => {
+      topNav.classList.add("is-open");
+      if (navHideTimer) clearTimeout(navHideTimer);
+      navHideTimer = setTimeout(hideNav, 1200);
+    };
+
+    document.addEventListener("mousemove", (e) => {
+      if (e.clientY <= SHOW_Y) showNav();
+    }, { passive: true });
+
+    topNav.addEventListener("mouseenter", showNav);
+    topNav.addEventListener("mouseleave", hideNav);
+    // 초기 살짝 보이기
+    setTimeout(showNav, 300);
+  }
+
   /* ========================
         이벤트 & 초기화
   ======================== */
@@ -472,8 +584,14 @@ function setIntroCanvasSize() {
     drawAll();
   });
 
-  leafStartInput.addEventListener("input", drawAll);
-  bugCountInput.addEventListener("input", drawAll);
+  leafStartInput.addEventListener("input", () => {
+    leafStartText.textContent = leafStartInput.value;
+    drawAll();
+  });
+  bugCountInput.addEventListener("input", () => {
+    bugCountText.textContent = bugCountInput.value;
+    drawAll();
+  });
 
   lineColorInput.addEventListener("input", e => {
     LINE_COLOR = e.target.value;
@@ -516,11 +634,14 @@ function setIntroCanvasSize() {
 
     leafCountText.textContent = leafCountInput.value;
     scaleText.textContent = scaleSlider.value + "%";
+    leafStartText.textContent = leafStartInput.value;
+    bugCountText.textContent = bugCountInput.value;
     densityText.textContent = densitySlider.value;
 
     isTiling = false;
     tileToggleBtn.textContent = "타일 배치: OFF";
     body.classList.remove("is-tiling");
+    if (tileDensityRow) tileDensityRow.classList.add("hidden");
 
     setCanvasSize();
   }
@@ -532,6 +653,9 @@ function setIntroCanvasSize() {
     isTiling = !isTiling;
     tileToggleBtn.textContent = isTiling ? "타일 배치: ON" : "타일 배치: OFF";
     body.classList.toggle("is-tiling", isTiling);
+    if (tileDensityRow) {
+      tileDensityRow.classList.toggle("hidden", !isTiling);
+    }
     setCanvasSize();
   });
 
@@ -574,5 +698,11 @@ function setIntroCanvasSize() {
   });
 
   // 초기 세팅 + 렌더
+  leafCountText.textContent = leafCountInput.value;
+  scaleText.textContent = scaleSlider.value + "%";
+  leafStartText.textContent = leafStartInput.value;
+  bugCountText.textContent = bugCountInput.value;
+  densityText.textContent = densitySlider.value;
+  if (tileDensityRow) tileDensityRow.classList.add("hidden");
   setCanvasSize();
 });

@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bloom Spiral - Intro</title>
+  <title>Bloom Spiral - Overview</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     *{box-sizing:border-box;}
     html,body{
       margin:0;
       height:100%;
-      font-family:"Noto Sans KR","Work Sans","Helvetica Neue", Arial, sans-serif;
+      font-family:"Noto Sans KR","Work Sans", "Helvetica Neue", Arial, sans-serif;
+      color:#fff;
     }
     body{
-      background:#fff;
+      background:#111;
       overflow:hidden;
       cursor:pointer;
     }
@@ -34,18 +35,20 @@
     .dim{
       position:absolute;
       inset:0;
-      background:rgba(0,0,0,0.6);
+      background:rgba(0,0,0,0.55);
+      transition:background 0.6s ease;
     }
     .logo{
       position:absolute;
-      top:10px;
+      top:50%;
       left:50%;
-      transform:translateX(-50%);
+      transform:translate(-50%,-50%);
       width:calc(100vw - 40px);
       max-width:none;
       height:auto;
       display:block;
       filter:brightness(0) invert(1) drop-shadow(0 10px 24px rgba(0,0,0,0.45));
+      transition:transform 0.9s ease, opacity 0.9s ease;
       pointer-events:none;
     }
     .cta{
@@ -56,43 +59,189 @@
       color:#fff;
       font-size:16px;
       font-weight:600;
+      font-family:"Work Sans","Noto Sans KR",sans-serif;
       letter-spacing:0.02em;
       text-shadow:0 2px 8px rgba(0,0,0,0.4);
+      transition:opacity 0.4s ease;
+      animation:ctaBlink 2s ease-in-out infinite;
       pointer-events:none;
-      animation:ctaBlink 2.2s ease-in-out infinite;
+    }
+    .overview{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-40%);
+      text-align:center;
+      max-width:720px;
+      line-height:1.7;
+      opacity:0;
+      transition:opacity 0.9s ease 0.2s, transform 0.9s ease 0.2s;
+    }
+    .overview h2{
+      margin:0 0 16px;
+      font-size:18px;
+      letter-spacing:0.02em;
+      font-weight:700;
+      font-family:"Work Sans","Noto Sans KR",sans-serif;
+    }
+    .overview p{
+      margin:0 0 12px;
+      font-size:15px;
+      font-weight:400;
+      font-family:"Noto Sans KR","Work Sans",sans-serif;
+    }
+    .overview p:last-child{margin-bottom:0;}
+    .back-btn{
+      position:fixed;
+      right:20px;
+      bottom:20px;
+      padding:10px 14px;
+      border:1px solid #fff;
+      border-radius:999px;
+      background:rgba(0,0,0,0.4);
+      color:#fff;
+      font-weight:700;
+      text-decoration:none;
+      box-shadow:0 6px 14px rgba(0,0,0,0.35);
+      transition:transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .back-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 18px rgba(0,0,0,0.45);
+    }
+    .is-revealed .logo{
+      transform:translate(-50%, -120%);
+      opacity:0;
+    }
+    .is-revealed .dim{
+      background:rgba(0,0,0,0.65);
+    }
+    .is-revealed .cta{
+      opacity:0;
+    }
+    .is-revealed .overview{
+      opacity:1;
+      transform:translate(-50%,-50%);
     }
     @keyframes ctaBlink{
-      0%, 100%{opacity:1;}
-      50%{opacity:0.25;}
+      0%,100%{opacity:1;}
+      50%{opacity:0.4;}
     }
-    .blackout{
+    .page-transition{
       position:fixed;
       inset:0;
       background:#000;
-      z-index:99;
       opacity:1;
-      transition:opacity 1.2s ease;
       pointer-events:auto;
+      transition:opacity 0.6s ease;
+      z-index:400;
     }
-    .blackout.is-hidden{
+    .is-ready .page-transition{
       opacity:0;
       pointer-events:none;
+    }
+    .is-leaving .page-transition{
+      opacity:1;
+      pointer-events:auto;
     }
   </style>
 </head>
 <body>
+  <div class="page-transition" id="pageTransition"></div>
   <div class="scene" id="scene">
     <canvas id="bgCanvas" class="flower-blur"></canvas>
     <div class="dim"></div>
     <img src="OPLOGO.svg" alt="Bloom Spiral" class="logo" />
-    <div class="cta">Click That Bloom!</div>
+    <div class="cta">Click to view overview</div>
+    <div class="overview" id="overview">
+      <h2></h2>
+      <div class="overview-lines"></div>
+    </div>
   </div>
-  <div class="blackout" id="blackout"></div>
+  <a class="back-btn" href="app.html">Back</a>
 
   <script>
     (() => {
       const canvas = document.getElementById("bgCanvas");
       const ctx = canvas.getContext("2d");
+      const scene = document.getElementById("scene");
+      const backBtn = document.querySelector(".back-btn");
+      const pageTransition = document.getElementById("pageTransition");
+      const overviewBox = document.getElementById("overview");
+      const overviewTitle = overviewBox ? overviewBox.querySelector("h2") : null;
+      const overviewLines = overviewBox ? overviewBox.querySelector(".overview-lines") : null;
+
+      const slides = [
+        {
+          title: "프로젝트 개요",
+          lines: [
+            "본 프로젝트는 자연 환경, 특히 나무의 시각적 아름다움을 극대화하고 동시에",
+            "환경 친화적인 가치를 실현하는 장식 패턴 디자인을 개발하는 것을 목표로 한다.",
+            "그리고 이 디자인을 잠복소에 입혀 우리가 흔히 보며 지나치는 가로수를",
+            "예술 작품으로 변모시키면서 생태계에 이바지하는 디자인 솔루션을 제시한다."
+          ]
+        },
+        {
+          title: "기획 의도",
+          lines: [
+            "\"친환경 디자인\"",
+            "나무의 월동준비와 겨울철 해충방제를 위한 잠복소의 패턴을",
+            "디자인하여 친환경 디자인의 가치를 실현.",
+            "\"시각적 미의 극대화\"",
+            "나무를 단순한 배경이 아닌 주목받는 대상으로 전환하여",
+            "도시 미관이나 조경 공간의 예술적 가치를 향상."
+          ]
+        },
+        {
+          title: "사용된 패턴",
+          lines: [
+            "자연 구조에서 가져온 원형(만다라) 기반 + 잎·벌레·꽃·나뭇가지의 반복 모듈"
+          ]
+        },
+        {
+          title: "패턴작업에 대하여",
+          lines: [
+            "원본 패턴 이미지: 나무의 잠복소",
+            "(잎, 벌레, 가지가 모여 하나의 보호 구조를 이루는 생태적 패턴)에서 영감",
+            "잎 → 곡선 기반 기본 모듈",
+            "벌레 → 중심선 + 대칭 날개",
+            "꽃 → 방사형 도형으로 단순화",
+            "나뭇가지 → 곡률을 가진 선 구조",
+            "네 요소를 하나의 원형 구조 안에 재배치하여 만다라화"
+          ]
+        },
+        {
+          title: "사용된 알고리즘",
+          lines: [
+            "삼각함수(sin/cos)로 회전 각도를 계산해 원형으로 배치, 레이어 간 구조의 차이를 줘 생태적 리듬 생성",
+            "• 서로다른 네 레이어가 겹쳐도 흐트러지지 않는 중심축 정리",
+            "• 각 레이어의 회전·수밀도·크기를 실시간 조절 가능하도록 파라미터화",
+            "• 브라우저 캔버스 렌더러로 복잡한 도형도 매끄럽게 렌더링"
+          ]
+        },
+        {
+          title: "Bloom Spiral 프로젝트",
+          lines: [
+            "김유빈, 홍주영, 김태환, 김정아",
+            "2025/11/17 - 2025/12/9",
+            "계원예술대학교 디지털디자인 수업"
+          ]
+        }
+      ];
+
+      let slideIdx = 0;
+
+      function renderSlide() {
+        if (!overviewTitle || !overviewLines) return;
+        const slide = slides[slideIdx % slides.length];
+        overviewTitle.textContent = slide.title;
+        overviewLines.innerHTML = "";
+        slide.lines.forEach(text => {
+          const p = document.createElement("p");
+          p.textContent = text;
+          overviewLines.appendChild(p);
+        });
+      }
 
       const COLORS = {
         line: "#325940",
@@ -330,7 +479,7 @@
         ctx.restore();
       }
 
-      function drawBug2(scale) {
+      function drawBug(scale) {
         const s = 0.18 * scale;
         ctx.fillStyle = COLORS.main;
         ctx.strokeStyle = COLORS.line;
@@ -378,7 +527,7 @@
           ctx.rotate(step * i + step / 2);
           ctx.translate(radius, 0);
           ctx.rotate(Math.PI / 2);
-          drawBug2(scale);
+          drawBug(scale);
           ctx.restore();
         }
         ctx.restore();
@@ -389,7 +538,6 @@
         const step = Math.PI * 2 / count;
 
         ctx.save();
-
         for (let i = 0; i < count; i++) {
           ctx.save();
           ctx.rotate(step * i);
@@ -400,15 +548,15 @@
           ctx.quadraticCurveTo(-10 * scale, 70 * scale, 0, 90 * scale);
           ctx.fillStyle = COLORS.main;
           ctx.fill();
+          ctx.strokeStyle = COLORS.line;
           ctx.stroke();
 
           ctx.restore();
         }
-
         ctx.restore();
       }
 
-      function drawMandalaAt(cx, cy, s) {
+      function drawMandala(cx, cy, s) {
         ctx.save();
         ctx.translate(cx, cy);
 
@@ -421,160 +569,75 @@
         ctx.restore();
       }
 
-      function drawBackground() {
+      function drawScene() {
+        const ratio = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
+        canvas.width  = rect.width * ratio;
+        canvas.height = rect.height * ratio;
+        canvas.style.width = rect.width + "px";
+        canvas.style.height = rect.height + "px";
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
         ctx.clearRect(0, 0, rect.width, rect.height);
 
         const baseScale = 1;
         const density = 2;
-        const mandalaScale = baseScale * (1.1 - density * 0.15);
+        const palette = PALETTES[Math.floor(Math.random() * PALETTES.length)];
+        Object.assign(COLORS, palette);
 
-        const baseSpacing = 480;
+        const mandalaScale = baseScale * (1.1 - density * 0.15);
+        const baseSpacing = 520;
         const spacingX = baseSpacing * mandalaScale;
         const spacingY = spacingX * 0.86;
 
         const startY = -spacingY;
         const endY   = rect.height + spacingY;
 
-        for (let row = 0, y = startY; y < endY; row++, y += spacingY) {
-          const rowOffsetX = (row % 2 === 1) ? spacingX / 2 : 0;
-          const startX = -spacingX + rowOffsetX;
-          const endX   = rect.width + spacingX;
-
-          for (let x = startX; x < endX; x += spacingX) {
-            drawMandalaAt(x, y, mandalaScale);
+        let row = 0;
+        for (let y = startY; y < endY; y += spacingY, row++) {
+          const offsetX = (row % 2 === 0) ? 0 : spacingX / 2;
+          for (let x = -spacingX + offsetX; x < rect.width + spacingX; x += spacingX) {
+            drawMandala(x, y, mandalaScale);
           }
         }
       }
 
-      function resize() {
-        const ratio = window.devicePixelRatio || 1;
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        canvas.width  = w * ratio;
-        canvas.height = h * ratio;
-        canvas.style.width = w + "px";
-        canvas.style.height = h + "px";
-        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-        drawBackground();
+      function init() {
+        drawScene();
       }
 
-      window.addEventListener("resize", resize);
-      resize();
+      window.addEventListener("resize", init);
+      init();
+      renderSlide();
 
-      // 시작 블랙 → 페이드아웃
-      const blackout = document.getElementById("blackout");
-      if (blackout) {
-        requestAnimationFrame(() => {
-          blackout.classList.add("is-hidden");
+      if (scene) {
+        scene.addEventListener("click", () => {
+          const revealed = document.body.classList.contains("is-revealed");
+          if (!revealed) {
+            document.body.classList.add("is-revealed");
+          } else {
+            if (slideIdx < slides.length - 1) {
+              slideIdx += 1;
+              renderSlide();
+            } else {
+              navigateWithFade("app.html");
+            }
+          }
         });
       }
 
-      // 진입
-      function goToApp() {
-        if (blackout) {
-          blackout.classList.remove("is-hidden");
-          // 화면이 닫히는 애니메이션 후 이동
-          setTimeout(() => {
-            window.location.href = "app.html";
-          }, 650);
-        } else {
-          window.location.href = "app.html";
-        }
+      document.body.classList.add("is-ready");
+      function navigateWithFade(target){
+        if (!pageTransition) { window.location.href = target; return; }
+        document.body.classList.add("is-leaving");
+        setTimeout(() => { window.location.href = target; }, 550);
       }
-
-      document.body.addEventListener("click", goToApp);
-      document.body.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
+      if (backBtn) {
+        backBtn.addEventListener("click", (e) => {
           e.preventDefault();
-          goToApp();
-        }
-      });
-
-      /* ========================
-          애니메이션 레이어
-      ======================== */
-      class FlowerLayer {
-        constructor(x, y, delay, scale, colorsOverride) {
-          this.x = x;
-          this.y = y;
-          this.delay = delay;
-          this.t = 0;
-          this.scale = scale;
-          this.colors = colorsOverride;
-        }
-        update() {
-          this.t += 0.01;
-        }
-        draw() {
-          const offset = Math.sin(this.t + this.delay) * 5;
-          const spin = Math.sin(this.t * 0.6 + this.delay) * 0.3 + this.t * 0.15;
-          const prevColors = { ...COLORS };
-          if (this.colors) {
-            Object.assign(COLORS, this.colors);
-          }
-          ctx.save();
-          ctx.translate(this.x, this.y + offset);
-          ctx.rotate(spin);
-          drawMandalaAt(0, 0, this.scale);
-          ctx.restore();
-          Object.assign(COLORS, prevColors);
-        }
-      }
-
-      let layers = [];
-      let mandalaScale = 1;
-
-      function rebuildLayers() {
-        layers = [];
-        const density = 2;
-        mandalaScale = 1 * (1.1 - density * 0.15);
-        const baseSpacing = 480;
-        const spacingX = baseSpacing * mandalaScale;
-        const spacingY = spacingX * 0.86;
-        const w = canvas.width / (window.devicePixelRatio || 1);
-        const h = canvas.height / (window.devicePixelRatio || 1);
-        const startY = -spacingY;
-        const endY = h + spacingY;
-
-        for (let row = 0, y = startY; y < endY; row++, y += spacingY) {
-          const rowOffsetX = (row % 2 === 1) ? spacingX / 2 : 0;
-          const startX = -spacingX + rowOffsetX;
-          const endX   = w + spacingX;
-          for (let x = startX; x < endX; x += spacingX) {
-            const basePalette = PALETTES[Math.floor(Math.random() * PALETTES.length)];
-            const palette = {
-              line: jitterHex(basePalette.line, 4, 4),
-              main: jitterHex(basePalette.main, 8, 6),
-              accent: jitterHex(basePalette.accent, 10, 6),
-              sub: jitterHex(basePalette.sub, 6, 6),
-              light: jitterHex(basePalette.light, 4, 4)
-            };
-            layers.push(new FlowerLayer(x, y, Math.random() * Math.PI * 2, mandalaScale, palette));
-          }
-        }
-      }
-
-      function animate() {
-        const rect = canvas.getBoundingClientRect();
-        ctx.clearRect(0, 0, rect.width, rect.height);
-        layers.forEach(layer => {
-          layer.update();
-          layer.draw();
+          navigateWithFade(backBtn.href);
         });
-        requestAnimationFrame(animate);
       }
-
-      // init animation layers once canvas is sized
-      const originalResize = resize;
-      function resizeWithLayers() {
-        originalResize();
-        rebuildLayers();
-      }
-      window.removeEventListener("resize", resize);
-      window.addEventListener("resize", resizeWithLayers);
-      resizeWithLayers();
-      requestAnimationFrame(animate);
     })();
   </script>
 </body>
